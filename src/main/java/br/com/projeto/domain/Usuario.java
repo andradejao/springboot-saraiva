@@ -17,13 +17,13 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer idusuario;
 	
-	@Column(length=30, unique=true, nullable=false)
+	@Column(length = 30, unique = true, nullable = false)
 	private String nomeusuario;
 	
-	@Column(length=255, nullable=false)
+	@Column(length = 255, nullable = false)
 	private String senha;
 	
-	@Column(length=200)
+	@Column(length = 200)
 	private String foto;
 	
 	@Column
