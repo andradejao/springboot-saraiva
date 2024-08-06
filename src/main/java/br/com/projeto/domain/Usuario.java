@@ -23,7 +23,7 @@ public class Usuario {
 	@Column(length = 255, nullable = false)
 	private String senha;
 	
-	@Column(length = 200)
+	@Column(length = 300)
 	private String foto;
 	
 	@Column
