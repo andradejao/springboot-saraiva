@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,16 +19,19 @@ import br.com.projeto.domain.Usuario;
 import br.com.projeto.repository.UsuarioRepository;
 
 @RestController
-@RequestMapping("usuario")
+@RequestMapping("/usuario")
 public class UsuarioController {
 
 	@Autowired
 	UsuarioRepository ur;
 	
 	@PostMapping("/cadastrar")
-	public String cadastrar(@RequestBody Usuario us) {
+	public ResponseEntity<?> cadastrar(@RequestBody Usuario us) {
 		ur.save(us);
-		return "Usuário Cadastrado!";
+		if(us == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao cadastrar");
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body("Usuário cadastrado");
 	}
 	
 	@GetMapping("/listar")
@@ -35,50 +40,86 @@ public class UsuarioController {
 	}
 	
 	@GetMapping("/consultar/{id}")
-	public Optional<Usuario> consultar(@PathVariable Integer id) {
-		return ur.findById(id);
+	public ResponseEntity<?> consultar(@PathVariable Integer id) {
+		Optional<Usuario> cid = ur.findById(id);
+		if(!cid.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(cid);
+		
 	}
 	
 	@GetMapping("/consultarusuario/{nomeusuario}")
-	public Optional<Usuario> consultarusuario(@PathVariable String nomeusuario){
-		return ur.findByNomeusuario(nomeusuario);
+	public ResponseEntity<?> consultarusuario(@PathVariable String nomeusuario){
+		Optional<Usuario> cnu = ur.findByNomeusuario(nomeusuario);
+		if(!cnu.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(cnu);
 	}
 	
 	@PatchMapping("/alterarfoto/{id}")
-	public String alterarfoto(@PathVariable Integer id, @RequestBody Usuario us) {
+	public ResponseEntity<?> alterarfoto(@PathVariable Integer id, @RequestBody Usuario us) {
 		Optional<Usuario> user = ur.findById(id);
 		if(!user.isPresent()) {
-			return "[{msg:'Não foi possível encontrar o usuário'}]";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
 		}
 		us.setIdusuario(id);
 		us.setNomeusuario(user.get().getNomeusuario());
 		us.setSenha(user.get().getNomeusuario());
 		us.setDataalteracao(user.get().getDataalteracao());
 		ur.save(us);
-		return "[{msg:'Foto alterada'}]";
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Foto alterada");
 	}
 	
 	@PatchMapping("/alterarsenha/{id}")
-	public String alterarsenha(@PathVariable Integer id, @RequestBody Usuario us) {
+	public ResponseEntity<?> alterarsenha(@PathVariable Integer id, @RequestBody Usuario us) {
 		Optional<Usuario> user = ur.findById(id);
 		if(!user.isPresent()) {
-			return "[{msg:'Não foi possível encontrar o usuário'}]";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
 		}
 		us.setIdusuario(id);
 		us.setNomeusuario(user.get().getNomeusuario());
 		us.setFoto(user.get().getFoto());
 		us.setDataalteracao(user.get().getDataalteracao());
 		ur.save(us);
-		return "[{msg:'Senha alterada'}]";
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Senha alterada");
 	}
 	
 	@DeleteMapping("/apagarusuario/{id}")
-	public String apagarusuario(@PathVariable Integer id) {
+	public ResponseEntity<?> apagarusuario(@PathVariable Integer id) {
 		Optional<Usuario> user = ur.findById(id);
 		if(!user.isPresent()) {
-			return "[{msg:'Não foi possível encontrar o usuário'}]";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
 		}
 		ur.deleteById(id);
-		return "[{msg:'Usuário deletado'}]";
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Usuário apagado");
 	}
+	
+	@PostMapping("/auth")
+	public ResponseEntity<?> auth(@RequestBody Usuario us) {
+		Usuario user = ur.findByNomeusuario(us.getNomeusuario(), us.getSenha());
+		if(user == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuário ou senha inválidos");
+		}
+		
+		return ResponseEntity.status(HttpStatus.OK).body("[{idusuario:'"+user.getIdusuario()+"'"+"nomeusuario:'"
+		+user.getNomeusuario()+"',"+"foto:'"+user.getFoto()+"}]");
+	}
+	
+//	@PostMapping("/login")
+//	public String login(@RequestBody Usuario us) {
+//		String msg = "";
+//		Usuario user = ur.findByNomeusuario(us.getNomeusuario(), us.getSenha());
+//		if(user == null) {
+//			msg = "Usuário ou senha inválidos";
+//		}
+//		else {
+//			msg = "Autenticado";
+//		}
+//		return msg;
+//	}
+	
 }
+
+

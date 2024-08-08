@@ -3,6 +3,8 @@ package br.com.projeto.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -13,7 +15,7 @@ import br.com.projeto.domain.Precos;
 import br.com.projeto.repository.PrecosRepository;
 
 @RestController
-@RequestMapping("precos")
+@RequestMapping("/precos")
 public class PrecosController {
 
 	@Autowired
@@ -25,8 +27,11 @@ public class PrecosController {
 	}
 	
 	@PostMapping("/cadastrar")
-	public String cadastrar(@RequestBody Precos p) {
+	public ResponseEntity<?> cadastrar(@RequestBody Precos p) {
 		 pr.save(p);
-		 return "Preço cadastrado";
+		 if(p == null) {
+			 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao cadastrar");
+		 }
+		 return ResponseEntity.status(HttpStatus.CREATED).body("Preço cadastrado");
 	}
 }
