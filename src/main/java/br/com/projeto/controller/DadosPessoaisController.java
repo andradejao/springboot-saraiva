@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -26,9 +28,12 @@ public class DadosPessoaisController {
 	private DadosPessoaisRepository dpr;
 	
 	@PostMapping("/cadastrar")
-	public String cadastrar(@RequestBody Dadospessoais dp) {
+	public ResponseEntity<?> cadastrar(@RequestBody Dadospessoais dp) {
 		dpr.save(dp);
-		return "Dados cadastrados";
+		if(dp == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao cadastrar");
+		}
+		return ResponseEntity.status(HttpStatus.CREATED).body("Dados Pessoais cadastrados");
 	}
 	
 	@GetMapping("/listar")
@@ -37,91 +42,115 @@ public class DadosPessoaisController {
 	}
 	
 	@GetMapping("/consultar/{id}")
-	public Optional<Dadospessoais> consultar(@PathVariable Integer id){
-		return dpr.findById(id);
+	public ResponseEntity<?> consultar(@PathVariable Integer id){
+		Optional<Dadospessoais> cid = dpr.findById(id);
+		if(!cid.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dados Pessoais não encontrados");
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(cid);
 	}
 	
 	@GetMapping("/consultarcpf/{cpf}")
-	public Optional<Dadospessoais> consultarcpf(@PathVariable String cpf){
-		return dpr.findByCpf(cpf);
+	public ResponseEntity<?> consultarcpf(@PathVariable String cpf){
+		Optional<Dadospessoais> conscpf = dpr.findByCpf(cpf);
+		if(!conscpf.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dados Pessoais não encontrados");
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(conscpf);
 	}
 	
 	@GetMapping("/consultaremail/{email}")
-	public Optional<Dadospessoais> consultaremail(@PathVariable String email){
-		return dpr.findByEmail(email);
+	public ResponseEntity<?> consultaremail(@PathVariable String email){
+		Optional<Dadospessoais> consemail = dpr.findByEmail(email);
+		if(!consemail.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Dados Pessoais não encontrados");
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(consemail);
 	}
 	
 	@PatchMapping("/alterarnome/{id}")
-	public String alterarnome(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
+	public ResponseEntity<?> alterarnome(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
 		Optional<Dadospessoais> pessoa = dpr.findById(id);
 		if(!pessoa.isPresent()) {
-			return "[{msg:'Não foi possível encontrar a pessoa'}]";
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Pessoa não encontrada");
 		}
 		dp.setIddadospessoais(id);
+		if(id == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Envie o id");
+		}
 		dp.setCpf(pessoa.get().getCpf());
 		dp.setEmail(pessoa.get().getEmail());
 		dp.setEndereco(pessoa.get().getEndereco());
 		dp.setIdusuario(pessoa.get().getIdusuario());
 		dp.setTelefone(pessoa.get().getTelefone());
 		dpr.save(dp);
-		return "[{msg:'Nome atualizado com sucesso'}]";
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Nome alterado");
 	}
 	
 	@PatchMapping("/alteraremail/{id}")
-	public String alteraremail(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
+	public ResponseEntity<?> alteraremail(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
 		Optional<Dadospessoais> pessoa = dpr.findById(id);
 		if(!pessoa.isPresent()) {
-			return "[{msg:'Não foi possível encontrar a pessoa'}]";
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Pessoa não encontrada");
 		}
 		dp.setIddadospessoais(id);
+		if(id == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Envie o id");
+		}
 		dp.setNomecompleto(pessoa.get().getNomecompleto());
 		dp.setCpf(pessoa.get().getCpf());
 		dp.setEndereco(pessoa.get().getEndereco());
 		dp.setIdusuario(pessoa.get().getIdusuario());
 		dp.setTelefone(pessoa.get().getTelefone());
 		dpr.save(dp);
-		return "[{msg:'Email atualizado com sucesso'}]";
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Email alterado");
 	}
 	
 	@PatchMapping("/alterarendereco/{id}")
-	public String alterarendereco(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
+	public ResponseEntity<?> alterarendereco(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
 		Optional<Dadospessoais> pessoa = dpr.findById(id);
 		if(!pessoa.isPresent()) {
-			return "[{msg:'Não foi possível encontrar a pessoa'}]";
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Pessoa não encontrada");
 		}
 		dp.setIddadospessoais(id);
+		if(id == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Envie o id");
+		}
 		dp.setNomecompleto(pessoa.get().getNomecompleto());
 		dp.setCpf(pessoa.get().getCpf());
 		dp.setEmail(pessoa.get().getEmail());
 		dp.setIdusuario(pessoa.get().getIdusuario());
 		dp.setTelefone(pessoa.get().getTelefone());
 		dpr.save(dp);
-		return "[{msg:'Endereço atualizado com sucesso'}]";
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Endereço alterado");
 	}
 	@PatchMapping("/alterartelefone/{id}")
-	public String alterartelefone(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
+	public ResponseEntity<?> alterartelefone(@PathVariable Integer id, @RequestBody Dadospessoais dp) {
 		Optional<Dadospessoais> pessoa = dpr.findById(id);
 		if(!pessoa.isPresent()) {
-			return "[{msg:'Não foi possível encontrar a pessoa'}]";
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Pessoa não encontrada");
 		}
 		dp.setIddadospessoais(id);
+		if(id == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Envie o id");
+		}
 		dp.setNomecompleto(pessoa.get().getNomecompleto());
 		dp.setCpf(pessoa.get().getCpf());
 		dp.setEndereco(pessoa.get().getEndereco());
 		dp.setIdusuario(pessoa.get().getIdusuario());
 		dp.setEmail(pessoa.get().getEmail());
 		dpr.save(dp);
-		return "[{msg:'Telefone atualizado com sucesso'}]";
+		return ResponseEntity.status(HttpStatus.ACCEPTED).body("Telefone alterado");
 	}
 	
 	@DeleteMapping("/apagarpessoa/{id}")
-	public String apagarpessoa(@PathVariable Integer id) {
+	public ResponseEntity<?> apagarpessoa(@PathVariable Integer id) {
 		Optional<Dadospessoais> people = dpr.findById(id);
 		if(!people.isPresent()) {
-			return "[{msg:'Não foi possível encontrar a pessoa'}]";
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
 		}
 		dpr.deleteById(id);
-		return "[{msg:'Pessoa deletada'}]";
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Usuário apagado");
 	}
 	
 }
